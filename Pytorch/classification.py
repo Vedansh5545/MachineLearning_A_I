@@ -84,4 +84,4 @@ def plotPrediction(X, y, y_pred):
     plt.legend()
     plt.show()
 
-plotPrediction(X, y, y_pred)
+plotPrediction(X, y, y_pred.cpu())
