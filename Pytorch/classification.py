@@ -117,7 +117,7 @@ def plot_decision_boundary(model, X, y):
     x_min, x_max = X[:, 0].min() - 0.1, X[:, 0].max() + 0.1
     y_min, y_max = X[:, 1].min() - 0.1, X[:, 1].max() + 0.1
     xx, yy = torch.meshgrid(torch.linspace(x_min, x_max, 100),
-                            torch.linspace(y_min, y_max, 100))
+                            torch.linspace(y_min, y_max, 100), indexing='xy')
     Z = model(torch.cat((xx.reshape(-1, 1), yy.reshape(-1, 1)), dim=1).to(device)).detach().cpu().numpy().reshape(xx.shape)
     Z = Z > 0  # Apply threshold to make it a binary classification boundary
     plt.contourf(xx, yy, Z, cmap=plt.cm.RdYlBu, alpha=0.8)
@@ -157,7 +157,6 @@ plt.title('Accuracy over Epochs')
 
 plt.tight_layout()
 plt.show()
-
 
 # Plotting confusion matrix for model efficiency
 cm = confusion_matrix(y_test.cpu(), y_pred.cpu())
