@@ -118,12 +118,13 @@ def plot_decision_boundary(model, X, y):
     y_min, y_max = X[:, 1].min() - 0.1, X[:, 1].max() + 0.1
     xx, yy = torch.meshgrid(torch.linspace(x_min, x_max, 100),
                             torch.linspace(y_min, y_max, 100), indexing='xy')
-    Z = model(torch.cat((xx.reshape(-1, 1), yy.reshape(-1, 1)), dim=1).to(device)).detach().cpu().numpy().reshape(xx.shape)
+    grid = torch.cat([xx.reshape(-1, 1), yy.reshape(-1, 1)], dim=1)
+    Z = model(grid.to(device)).detach().cpu().numpy().reshape(xx.shape)
     Z = Z > 0  # Apply threshold to make it a binary classification boundary
-    plt.contourf(xx, yy, Z, cmap=plt.cm.RdYlBu, alpha=0.8)
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.RdYlBu, edgecolors='k')
-    plt.xlim(xx.min(), xx.max())
-    plt.ylim(yy.min(), yy.max())
+    plt.contourf(xx.numpy(), yy.numpy(), Z, cmap=plt.cm.RdYlBu, alpha=0.8)
+    plt.scatter(X[:, 0].numpy(), X[:, 1].numpy(), c=y.numpy(), cmap=plt.cm.RdYlBu, edgecolors='k')
+    plt.xlim(xx.min().item(), xx.max().item())
+    plt.ylim(yy.min().item(), yy.max().item())
     plt.xticks(())
     plt.yticks(())
 
