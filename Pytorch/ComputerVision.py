@@ -4,8 +4,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import torchvision
-from torchvision import datasets
-from torchvision.transforms import ToTensor
+from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from timeit import default_timer as timer
 from tqdm.auto import tqdm
@@ -16,19 +15,30 @@ print(torch.__version__)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
 
+# Data augmentation and normalization
+transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+
 # Load data
 train_data = datasets.FashionMNIST(
     root="data",
     train=True,
     download=True,
-    transform=ToTensor()
+    transform=transform
 )
 
 test_data = datasets.FashionMNIST(
     root="data",
     train=False,
     download=True,
-    transform=ToTensor()
+    transform=transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,))
+    ])
 )
 
 class_names = train_data.classes
@@ -65,19 +75,30 @@ class NeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2)
         )
+        self.block_3 = nn.Sequential(
+            nn.Conv2d(hidden_units, hidden_units, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(hidden_units, hidden_units, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_features=hidden_units*7*7, out_features=output_shape)
+            nn.Linear(in_features=hidden_units*3*3, out_features=128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(in_features=128, out_features=output_shape)
         )
 
     def forward(self, x):
         x = self.block_1(x)
         x = self.block_2(x)
+        x = self.block_3(x)
         x = self.classifier(x)
         return x
 
 # Initialize model
-model = NeuralNetwork(1, 10, 10).to(device)
+model = NeuralNetwork(1, 32, 10).to(device)
 print(f"Model: {model}")
 
 def accuracy_fn(pred, target):
@@ -87,10 +108,10 @@ def accuracy_fn(pred, target):
     return accuracy
 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Training
-epochs = 3
+epochs = 10
 
 def print_train_timer(start, end):
     print(f"Train Time: {end - start:.2f} seconds")
@@ -139,7 +160,7 @@ for epoch in tqdm(range(epochs)):
     test_losses.append(test_loss)
     test_accuracies.append(test_accuracy)
 
-    print(f"Epoch: {epoch+1}, Train Loss: {train_loss:.2f}%, Test Loss: {test_loss:.2f}%, Train Accuracy: {train_accuracy:.2f}%, Test Accuracy: {test_accuracy:.2f}%")
+    print(f"Epoch: {epoch+1}, Train Loss: {train_loss:.2f}, Test Loss: {test_loss:.2f}, Train Accuracy: {train_accuracy:.2f}%, Test Accuracy: {test_accuracy:.2f}%")
 
 end_time = timer()
 print_train_timer(train_time, end_time)
@@ -182,14 +203,14 @@ def evaluate(model, test_dataloader, loss_fn, accuracy_fn):
         test_loss /= len(test_dataloader)
         accuracy /= len(test_dataloader)
     
-    return {"test_loss": test_loss * 100, "test_accuracy": accuracy}
+    return {"test_loss": test_loss, "test_accuracy": accuracy}
 
 test_time = timer()
 result = evaluate(model, test_dataloader, loss_fn, accuracy_fn)
 test_time = timer() - test_time
 
 print(f"Test Time: {test_time:.2f} seconds")
-print(f"Test Loss: {result['test_loss']:.2f}%")
+print(f"Test Loss: {result['test_loss']:.2f}")
 print(f"Test Accuracy: {result['test_accuracy']:.2f}%")
 
 y_preds = []
