@@ -1,3 +1,8 @@
+
+'''
+The code is an implementation of a convolutional neural network (CNN) for image classification using PyTorch. It trains the model on the FashionMNIST dataset and evaluates its performance. It also plots the training and testing loss/accuracy curves and displays a confusion matrix to visualize the model's performance.The code is an implementation of a convolutional neural network (CNN) for image classification using PyTorch. It trains the model on the FashionMNIST dataset and evaluates its performance. It also plots the training and testing loss/accuracy curves and displays a confusion matrix to visualize the model's performance.
+'''
+
 import pandas as pd
 import numpy as np
 import torch
