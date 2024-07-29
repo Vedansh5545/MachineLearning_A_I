@@ -24,6 +24,17 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 x_train = x_train.reshape(-1, 28 * 28).astype("float32") / 255.0
 x_test = x_test.reshape(-1, 28 * 28).astype("float32") / 255.0
 
+"""
+model = keras.Sequential(
+    [
+        keras.Input(shape=(784,)),  # Input layer for flattened 28x28 images
+        layers.Dense(512, activation='relu'),  # First hidden layer
+        layers.Dense(256, activation='relu'),  # Second hidden layer
+        layers.Dense(10),  # Output layer for 10 classes
+    ]
+)
+"""
+
 # Define the model architecture
 inputs = keras.Input(shape=(784,))
 x = layers.Dense(512, activation='relu')(inputs)
