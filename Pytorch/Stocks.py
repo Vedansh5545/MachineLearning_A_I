@@ -81,10 +81,9 @@ for i in range(epochs):
 
     if i % 10 == 0:
         print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
-
 # Testing the model on unseen data
 model.eval()
-test_inputs = data_normalized[-seq_length:].tolist()
+test_inputs = data_normalized[-seq_length:].tolist()  # Ensure it's a list of floats
 model.hidden_cell = (torch.zeros(1, 1, model.hidden_layer_size).to(device),
                      torch.zeros(1, 1, model.hidden_layer_size).to(device))
 
@@ -94,7 +93,7 @@ for i in range(10):  # Predicting 10 days into the future
         model.hidden_cell = (torch.zeros(1, 1, model.hidden_layer_size).to(device),
                              torch.zeros(1, 1, model.hidden_layer_size).to(device))
         predicted_value = model(seq)
-        test_inputs.append(predicted_value.item())
+        test_inputs.append(predicted_value.item())  # Ensure we append a scalar value
 
 # Inverse transform the predictions
 predicted_stock_price = scaler.inverse_transform(np.array(test_inputs[seq_length:]).reshape(-1, 1))
